@@ -1,0 +1,8 @@
+-f https://download.pytorch.org/whl/cu113
+torch
+torchaudio
+webrtcvad
+librosa
+augly
+sklearn
+numpy

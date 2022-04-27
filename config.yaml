@@ -1,0 +1,18 @@
+sample_rate: 16000
+frame_size_ms: 10
+frame_size: int(sample_rate * (frame_size_ms / 1000.0))
+device: "cuda"
+
+speech_data_paths:
+    - "/path/to/LibriSpeech/dev-other/"
+    - "/path/to/LibriSpeech/dev-clean/"
+
+noise_data_paths:
+    - "/path/to/urban8k/"
+    - "/path/to/ESC-50-master/audio/"
+
+epochs: 10
+batch_size: 64
+num_workers: 4
+
+seed: 42
