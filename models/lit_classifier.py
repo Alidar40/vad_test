@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 from torch import optim
 from torch.nn import functional as F
@@ -7,13 +8,19 @@ import wandb
 
 from utils.visualization import plot_audio_with_vad
 
+import time
 
 class LitClassifier(pl.LightningModule):
-    def __init__(self, classifier, sample_rate):
+    def __init__(self, classifier, sample_rate, threshold=0.5):
         super().__init__()
         self.save_hyperparameters()
         self.classifier = classifier
         self.sample_rate = sample_rate
+        self.threshold = threshold
+
+        self.predictions = None
+        self.speed_per_batch = list()
+        self.avg_speed = None
 
     def training_step(self, batch, batch_idx):
         x, y = batch
@@ -56,9 +63,22 @@ class LitClassifier(pl.LightningModule):
 
     def test_step(self, batch, batch_idx):
         x, y = batch
+        begin = time.time()
         y_hat = self.classifier(x)
-        test_loss = F.binary_cross_entropy(y_hat, y)
-        self.log("test_loss", test_loss)
+        end = time.time()
+        self.speed_per_batch.append((end - begin) * 1000 / x.size()[0])
+        return y_hat
+
+    def test_epoch_end(self, outputs):
+        # print(outputs)
+        self.predictions = torch.cat(outputs)
+        self.avg_speed = np.mean(self.speed_per_batch)
+
+    def predict_step(self, batch, batch_idx):
+        x, y = batch
+        y_hat = self.classifier(x)
+
+        return (y_hat > self.threshold).int()
 
     def configure_optimizers(self):
         optimizer = optim.Adam(self.parameters(), lr=1e-3)

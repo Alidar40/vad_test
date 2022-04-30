@@ -183,3 +183,12 @@ def get_train_val_dataloaders(feature_extractor, vad: ExternalVAD):
     val_dataloader = DataLoader(val_dataset, batch_size=1, shuffle=False, num_workers=2)
 
     return train_dataloader, val_dataloader
+
+
+def get_test_dataloader(feature_extractor, vad: ExternalVAD):
+    speech_files = _get_files(TEST_SPEECH_DATA_PATHS)
+    noise_files = _get_files(SPEECH_DATA_PATHS)
+
+    dataset = SpeechFrameSet(speech_files[:1], noise_files, feature_extractor, vad)
+
+    return DataLoader(dataset, batch_size=1, shuffle=False, num_workers=2)

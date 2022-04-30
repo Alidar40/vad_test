@@ -28,3 +28,11 @@ seed: 42
 
 external_vad: "webrtc"  # webrtc or cobra (cobra turned out to be really bad for 10ms frame size)
 cobra_threshold: 0.7
+
+test_models:
+    - model: "webrtc"
+      ckpt_path: ""
+    - model: "lenet32"
+      ckpt_path: ""
+    - model: "cnn_bilstm"
+      ckpt_path: "checkpoints/YceP2pCR/last.ckpt"

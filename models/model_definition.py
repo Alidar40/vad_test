@@ -9,6 +9,14 @@ def get_classifier_by_name(model_name):
     if model_name == "naive_linear":
         classifier = NaiveLinearNet()
         feature_extractor = nofeature_extractor
+    elif model_name == "webrtc":
+        # For test/benchmarking only!
+        classifier = WebrtcVAD()
+        feature_extractor = nofeature_extractor
+    elif model_name == "cobra":
+        # For test/benchmarking only!
+        classifier = CobraVAD()
+        feature_extractor = nofeature_extractor
     elif model_name == "lenet8":
         classifier = LeNet8()
         feature_extractor = logfbank_8_extractor
