@@ -26,5 +26,5 @@ wandb:
 
 seed: 42
 
-vad_classifier: "webrtc"  # webrtc or cobra (cobra turned out to be really bad for 10ms frame size)
+external_vad: "webrtc"  # webrtc or cobra (cobra turned out to be really bad for 10ms frame size)
 cobra_threshold: 0.7

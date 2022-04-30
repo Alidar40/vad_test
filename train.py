@@ -2,61 +2,33 @@ import pytorch_lightning as pl
 from pytorch_lightning.loggers import WandbLogger
 from pytorch_lightning.callbacks import ModelCheckpoint
 
-from models.naive_linear_net import NaiveLinearNet
-from models.lenet import LeNet8, LeNet32
-from models.cnn_lstm import CNN_BiLSTM
+
+from data_processing.speechset import get_train_val_dataloaders
+from models.model_definition import get_classifier_by_name, get_vad_by_name
 from models.lit_classifier import LitClassifier
-from data_processing.speechset import get_dataloaders
-from data_processing.feature_extractors import nofeature_extractor, logfbank_8_extractor, logfbank_32_extractor
-from config import config
 from utils.initialization import seed_everything
-from utils.vad_classifier import WebrtcVAD, CobraVAD
+from config import config
 
 
 if __name__ == "__main__":
-    SEED = config["seed"]
-    FRAME_SIZE = config["frame_size"]
     SAMPLE_RATE = config["sample_rate"]
-
+    SEED = config["seed"]
     MODEL = config["model"]
+    EXTERNAL_VAD = config["external_vad"]
     CONTINUE_FROM_CKPT = config["continue_from_ckpt"]
     CKPT_PATH = config["ckpt_path"]
     EPOCHS = config["epochs"]
     LOG_EVERY_N_STEP = config["log_every_n_step"]
     VAL_CHECK_INTERVAL = config["val_check_interval"]
-
     WANDB_ARGS = config["wandb"]
-    VAD_CLASSIFIER = config["vad_classifier"]
-    COBRA_ACCESS_KEY = config["cobra_access_key"]
-    COBRA_THRESHOLD = config["cobra_threshold"]
 
     seed_everything(SEED)
 
-    if MODEL == "naive_linear":
-        classifier = NaiveLinearNet()
-        feature_extractor = nofeature_extractor
-    elif MODEL == "lenet8":
-        classifier = LeNet8()
-        feature_extractor = logfbank_8_extractor
-    elif MODEL == "lenet32":
-        classifier = LeNet32()
-        feature_extractor = logfbank_32_extractor
-    elif MODEL == "cnn_bilstm":
-        classifier = CNN_BiLSTM()
-        feature_extractor = logfbank_32_extractor
-    else:
-        raise NotImplemented("Such a model is not implemented")
+    classifier, feature_extractor = get_classifier_by_name(MODEL)
+    model = LitClassifier(classifier, SAMPLE_RATE)
 
-    lit = LitClassifier(classifier, SAMPLE_RATE)
-
-    if VAD_CLASSIFIER == "webrtc":
-        vad = WebrtcVAD(FRAME_SIZE, SAMPLE_RATE)
-    elif VAD_CLASSIFIER == "cobra":
-        vad = CobraVAD(FRAME_SIZE, SAMPLE_RATE, COBRA_THRESHOLD, COBRA_ACCESS_KEY)
-    else:
-        raise NotImplemented("Such a VAD classifier is not implemented")
-
-    train_dataloader, val_dataloader, test_dataloader = get_dataloaders(feature_extractor, vad)
+    vad = get_vad_by_name(EXTERNAL_VAD)
+    train_dataloader, val_dataloader = get_train_val_dataloaders(feature_extractor, vad)
 
     wandb_logger = WandbLogger(project=WANDB_ARGS["project"], name=WANDB_ARGS["name"], mode=WANDB_ARGS["mode"])
 
@@ -77,10 +49,11 @@ if __name__ == "__main__":
         callbacks=[checkpoint_callback],
         gpus=1,
         accelerator="gpu",
-        devices=1
+        devices=1,
     )
 
     if CONTINUE_FROM_CKPT:
-        trainer.fit(model=lit, train_dataloaders=train_dataloader, val_dataloaders=val_dataloader, ckpt_path=CKPT_PATH)
+        trainer.fit(model=model, train_dataloaders=train_dataloader, val_dataloaders=val_dataloader, ckpt_path=CKPT_PATH)
     else:
-        trainer.fit(model=lit, train_dataloaders=train_dataloader, val_dataloaders=val_dataloader)
+        trainer.fit(model=model, train_dataloaders=train_dataloader, val_dataloaders=val_dataloader)
+

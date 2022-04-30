@@ -9,7 +9,7 @@ import librosa
 import augly.audio as audaugs
 import numpy as np
 
-from utils.vad_classifier import VAD_Classifier
+from models.external_vad import ExternalVAD
 from config import config
 
 
@@ -19,6 +19,7 @@ FRAME_SIZE_MS = config["frame_size_ms"]
 FRAME_SIZE = config["frame_size"]
 
 SPEECH_DATA_PATHS = config["speech_data_paths"]
+TEST_SPEECH_DATA_PATHS = config["test_speech_data_paths"]
 NOISE_DATA_PATHS = config["noise_data_paths"]
 BATCH_SIZE = config["batch_size"]
 NUM_WORKERS = config["num_workers"]
@@ -28,7 +29,7 @@ class SpeechFrameSet(Dataset):
     """
     Returns frame-wise features from dataset
     """
-    def __init__(self, speech_files, noise_files, feature_extractor, vad: VAD_Classifier):
+    def __init__(self, speech_files, noise_files, feature_extractor, vad: ExternalVAD):
         self.speech_files = speech_files
         self.noise_files = noise_files
 
@@ -91,8 +92,7 @@ class SpeechFrameSet(Dataset):
         result_audio = mix_audio[frame_start:frame_end]
         speech_audio = speech_audio[frame_start:frame_end]
 
-        self.vad.reinit()
-        is_speech = self.vad.is_speech(speech_audio)
+        is_speech = self.vad(speech_audio)
 
         if random.random() < 0.5:
             # In half of the cases return non-speech audio
@@ -119,7 +119,7 @@ class SpeechFileSet(SpeechFrameSet):
     Returns file-wise features from dataset
     Optimized for validation and logging results for entire file
     """
-    def __init__(self, speech_files, noise_files, feature_extractor, vad: VAD_Classifier):
+    def __init__(self, speech_files, noise_files, feature_extractor, vad: ExternalVAD):
         super(SpeechFileSet, self).__init__(speech_files, noise_files, feature_extractor, vad)
 
     def __len__(self):
@@ -149,8 +149,7 @@ class SpeechFileSet(SpeechFrameSet):
                 frame = speech_audio[i:i + FRAME_SIZE]
                 if len(frame) != FRAME_SIZE:
                     break
-                self.vad.reinit()
-                labels.append(self.vad.is_speech(frame))
+                labels.append(self.vad(frame))
 
         features = list()
         for i in range(0, len(result_audio), FRAME_SIZE):
@@ -162,27 +161,25 @@ class SpeechFileSet(SpeechFrameSet):
         return torch.as_tensor(np.array(features)).float(), torch.as_tensor(labels, dtype=torch.float), torch.as_tensor(result_audio)
 
 
-def get_dataloaders(feature_extractor, vad: VAD_Classifier):
-    speech_files = list()
-    for data_path in SPEECH_DATA_PATHS:
-        speech_files.extend(glob.glob(data_path + '/**/*.wav', recursive=True))
-        speech_files.extend(glob.glob(data_path + '/**/*.flac', recursive=True))
+def _get_files(data_paths: list):
+    files = list()
+    for data_path in data_paths:
+        files.extend(glob.glob(data_path + '/**/*.wav', recursive=True))
+        files.extend(glob.glob(data_path + '/**/*.flac', recursive=True))
+    return files
 
-    noise_files = list()
-    for data_path in NOISE_DATA_PATHS:
-        noise_files.extend(glob.glob(data_path + '/**/*.wav', recursive=True))
-        noise_files.extend(glob.glob(data_path + '/**/*.flac', recursive=True))
 
-    train_speech_files, test_speech_files = train_test_split(speech_files, test_size=0.3, shuffle=True, random_state=SEED)
-    test_speech_files, val_speech_files = train_test_split(test_speech_files, test_size=0.5, shuffle=True, random_state=SEED)
+def get_train_val_dataloaders(feature_extractor, vad: ExternalVAD):
+    speech_files = _get_files(SPEECH_DATA_PATHS)
+    noise_files = _get_files(SPEECH_DATA_PATHS)
+
+    train_speech_files, val_speech_files = train_test_split(speech_files[:50], test_size=0.3, shuffle=True, random_state=SEED)
 
     train_dataset = SpeechFrameSet(train_speech_files, noise_files, feature_extractor, vad)
     val_dataset = SpeechFileSet(val_speech_files, noise_files, feature_extractor, vad)
-    test_dataset = SpeechFileSet(test_speech_files, noise_files, feature_extractor, vad)
 
     # Keeping shuffle=False is important for caching and memoization
     train_dataloader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS)
     val_dataloader = DataLoader(val_dataset, batch_size=1, shuffle=False, num_workers=2)
-    test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=1)
 
-    return train_dataloader, val_dataloader, test_dataloader
+    return train_dataloader, val_dataloader
