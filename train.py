@@ -4,6 +4,7 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 
 from models.naive_linear_net import NaiveLinearNet
 from models.lenet import LeNet8, LeNet32
+from models.cnn_lstm import CNN_BiLSTM
 from models.lit_classifier import LitClassifier
 from data_processing.speechset import get_dataloaders
 from data_processing.feature_extractors import nofeature_extractor, logfbank_8_extractor, logfbank_32_extractor
@@ -29,6 +30,9 @@ if __name__ == "__main__":
         feature_extractor = logfbank_8_extractor
     elif MODEL == "lenet32":
         classifier = LeNet32()
+        feature_extractor = logfbank_32_extractor
+    elif MODEL == "cnn_bilstm":
+        classifier = CNN_BiLSTM()
         feature_extractor = logfbank_32_extractor
     else:
         raise ValueError("No model or bad model specified")

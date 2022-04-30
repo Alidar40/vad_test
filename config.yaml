@@ -11,7 +11,7 @@ noise_data_paths:
     - "/path/to/urban8k/"
     - "/path/to/ESC-50-master/audio/"
 
-model: "lenet32" # naive_linear, lenet8, lenet32
+model: "lenet32" # naive_linear, lenet8, lenet32, cnn_bilstm
 epochs: 50
 batch_size: 32
 num_workers: 2
