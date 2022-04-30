@@ -11,6 +11,7 @@ from utils.visualization import plot_audio_with_vad
 class LitClassifier(pl.LightningModule):
     def __init__(self, classifier, sample_rate):
         super().__init__()
+        self.save_hyperparameters()
         self.classifier = classifier
         self.sample_rate = sample_rate
 

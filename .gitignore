@@ -5,6 +5,7 @@ logs/
 lightning_logs/
 vad_test/
 wandb/
+checkpoints/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

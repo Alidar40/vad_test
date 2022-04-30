@@ -4,14 +4,15 @@ frame_size: int(sample_rate * (frame_size_ms / 1000.0))
 device: "cuda"
 
 speech_data_paths:
-    - "/path/to/LibriSpeech/dev-other/"
-    - "/path/to/LibriSpeech/dev-clean/"
+    - "/path/to/LibriSpeech/train-clean-100/"
 
 noise_data_paths:
     - "/path/to/urban8k/"
     - "/path/to/ESC-50-master/audio/"
 
-model: "lenet32" # naive_linear, lenet8, lenet32, cnn_bilstm
+model: "cnn_bilstm" # naive_linear, lenet8, lenet32, cnn_bilstm
+continue_from_ckpt: true
+ckpt_path: "checkpoints/path/to/chekpoint.ckpt"
 epochs: 50
 batch_size: 32
 num_workers: 2

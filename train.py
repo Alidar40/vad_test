@@ -13,19 +13,23 @@ from utils.initialization import seed_everything
 from utils.vad_classifier import WebrtcVAD, CobraVAD
 
 
-SEED = config["seed"]
-SAMPLE_RATE = config["sample_rate"]
-EPOCHS = config["epochs"]
-LOG_EVERY_N_STEP = config["log_every_n_step"]
-VAL_CHECK_INTERVAL = config["val_check_interval"]
-MODEL = config["model"]
-WANDB_ARGS = config["wandb"]
-VAD_CLASSIFIER = config["vad_classifier"]
-FRAME_SIZE = config["frame_size"]
-COBRA_ACCESS_KEY = config["cobra_access_key"]
-COBRA_THRESHOLD = config["cobra_threshold"]
-
 if __name__ == "__main__":
+    SEED = config["seed"]
+    FRAME_SIZE = config["frame_size"]
+    SAMPLE_RATE = config["sample_rate"]
+
+    MODEL = config["model"]
+    CONTINUE_FROM_CKPT = config["continue_from_ckpt"]
+    CKPT_PATH = config["ckpt_path"]
+    EPOCHS = config["epochs"]
+    LOG_EVERY_N_STEP = config["log_every_n_step"]
+    VAL_CHECK_INTERVAL = config["val_check_interval"]
+
+    WANDB_ARGS = config["wandb"]
+    VAD_CLASSIFIER = config["vad_classifier"]
+    COBRA_ACCESS_KEY = config["cobra_access_key"]
+    COBRA_THRESHOLD = config["cobra_threshold"]
+
     seed_everything(SEED)
 
     if MODEL == "naive_linear":
@@ -57,10 +61,12 @@ if __name__ == "__main__":
     wandb_logger = WandbLogger(project=WANDB_ARGS["project"], name=WANDB_ARGS["name"], mode=WANDB_ARGS["mode"])
 
     checkpoint_callback = ModelCheckpoint(
-        save_top_k=5,
+        save_last=True,
+        save_top_k=3,
         monitor="val_loss",
         mode="min",
         filename=MODEL+"-{epoch:02d}-{val_loss:.2f}",
+        dirpath=f"./checkpoints/{wandb_logger.experiment.id[-8:]}/"
     )
 
     trainer = pl.Trainer(
@@ -73,8 +79,8 @@ if __name__ == "__main__":
         accelerator="gpu",
         devices=1
     )
-    trainer.fit(
-        model=lit,
-        train_dataloaders=train_dataloader,
-        val_dataloaders=val_dataloader,
-    )
+
+    if CONTINUE_FROM_CKPT:
+        trainer.fit(model=lit, train_dataloaders=train_dataloader, val_dataloaders=val_dataloader, ckpt_path=CKPT_PATH)
+    else:
+        trainer.fit(model=lit, train_dataloaders=train_dataloader, val_dataloaders=val_dataloader)
