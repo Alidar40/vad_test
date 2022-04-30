@@ -1,5 +1,5 @@
 sample_rate: 16000
-frame_size_ms: 10
+frame_size_ms: 10 # 10ms only
 frame_size: int(sample_rate * (frame_size_ms / 1000.0))
 device: "cuda"
 
@@ -11,8 +11,16 @@ noise_data_paths:
     - "/path/to/urban8k/"
     - "/path/to/ESC-50-master/audio/"
 
-epochs: 10
-batch_size: 64
-num_workers: 4
+model: "lenet32" # naive_linear, lenet8, lenet32
+epochs: 50
+batch_size: 32
+num_workers: 2
+log_every_n_step: 150
+val_check_interval: 0.3
+
+wandb:
+    project: "vad_test"
+    name: "as_model" # if 'as_model' then name will be taken from 'model' parameter
+    mode: "online" # online or disabled
 
 seed: 42

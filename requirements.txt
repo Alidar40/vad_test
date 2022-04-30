@@ -1,8 +1,13 @@
 -f https://download.pytorch.org/whl/cu113
 torch
 torchaudio
+pytorch-lightning
+torchmetrics
+python_speech_features
 webrtcvad
 librosa
 augly
 sklearn
 numpy
+wandb
+plotly

@@ -3,6 +3,8 @@
 runs/
 logs/
 lightning_logs/
+vad_test/
+wandb/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
