@@ -5,9 +5,12 @@ pytorch-lightning
 torchmetrics
 python_speech_features
 webrtcvad
+pvcobra
 librosa
 augly
 sklearn
 numpy
 wandb
+matplotlib
 plotly
+python-dotenv
