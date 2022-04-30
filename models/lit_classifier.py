@@ -16,8 +16,9 @@ class LitClassifier(pl.LightningModule):
         return loss
 
     def validation_step(self, batch, batch_idx):
-        x, y = batch
-        y_hat = self.classifier(x)
+        x, y, audio = batch
+        y_hat = self.classifier(torch.squeeze(x, 0))
+        y = y.T
         val_loss = F.binary_cross_entropy(y_hat, y)
         self.log("val_loss", val_loss)
 
