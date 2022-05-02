@@ -14,7 +14,9 @@ as speech or non-speech.
 
     4.1 [ Features ](#features)  
     4.2 [ Metrics ](#metrics)
-    4.3 [ LeNet-32 ](#lenet-32) 
+
+    4.3 [ LeNet-32 ](#lenet-32)
+
     4.4 [ CNN-BiLSTM ](#cnn-bilstm)  
     4.5 [ Ensembles ](#ensembles)
 
@@ -96,7 +98,7 @@ Inspired by [A Hybrid CNN-BiLSTM Voice Activity Detector](https://arxiv.org/abs/
 ![lenet32 cnn-bilstm comparison](images/lenet32_cnnbilstm_comparison.png)
 
 CNN-BiLSTM turned out to be aggressive and quite sensitive to noise.
-In contrast, LeNet32 give conservative predictions and is very cautious.
+In contrast, LeNet32 gives conservative predictions and is very cautious.
 
 Can quality be improved by ensemble this two models? [At least it doesn't get worse](#results)
 
