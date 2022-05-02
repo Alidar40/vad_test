@@ -11,6 +11,7 @@ config['frame_size'] = int(config['sample_rate'] * (config['frame_size_ms'] / 10
 
 if config['wandb']['name'] == 'as_model':
     config['wandb']['name'] = config['model']
+config["wandb"]["submission_name"] = config["wandb"]["submission_name"] + " " + config["model"]
 
 config["cobra_access_key"] = os.environ['COBRA_ACCESS_KEY']
 

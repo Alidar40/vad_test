@@ -1,7 +1,5 @@
 sample_rate: 16000
 frame_size_ms: 10 # 10ms only
-frame_size: int(sample_rate * (frame_size_ms / 1000.0))
-device: "cuda"
 
 speech_data_paths:
     - "/path/to/LibriSpeech/train-clean-100/"
@@ -13,9 +11,13 @@ noise_data_paths:
 test_speech_data_paths:
     - "/home/alidar/Dev/datasets/LibriSpeech/dev-clean/"
 
-model: "lenet32" # lenet32, cnn_bilstm
-continue_from_ckpt: false
+submission_data_paths:
+    - "/home/alidar/Dev/datasets/for_devs/"
+
+model: "lenet32" # lenet32, cnn_bilstm, ensemble_lenet32_cnn_bilsm, ensemble_lenet32_cnn_bilsm_double
+# For ensemble model specify array of checkpoints!
 ckpt_path: "checkpoints/path/to/chekpoint.ckpt"
+continue_from_ckpt: false
 epochs: 50
 batch_size: 32
 num_workers: 2
@@ -27,6 +29,7 @@ wandb:
     name: "as_model" # if 'as_model' then name will be taken from 'model' parameter
     mode: "online" # online or disabled
     test_name: "Benchmark" # name for testing script
+    submission_name: "Submission" # (+ model name) name for submission script
 
 seed: 42
 
@@ -37,6 +40,24 @@ test_models:
     - model: "webrtc"
       ckpt_path: ""
     - model: "lenet32"
-      ckpt_path: ""
+      ckpt_path: "checkpoints/path/to/lenet32.ckpt"
     - model: "cnn_bilstm"
-      ckpt_path: "checkpoints/YceP2pCR/last.ckpt"
+      ckpt_path: "checkpoints/path/to/cnn_bilstm.ckpt"
+    - model: "ensemble_lenet32_cnn_bilstm"
+      ckpt_path:
+          - "checkpoints/path/to/chekpoint.ckpt"
+          - "checkpoints/path/to/chekpoint.ckpt"
+    - model: "ensemble_lenet32_cnn_bilstm_double"
+      ckpt_path:
+          - "checkpoints/path/to/lenet32.ckpt"
+          - "checkpoints/path/to/cnn_bilstm.ckpt"
+          - "checkpoints/path/to/cnn_bilstm.ckpt"
+
+submission_thresholds:
+    - 0.5
+    - 0.63
+    - 0.7
+    - 0.8
+    - 0.9
+    - 0.95
+    - 0.98
