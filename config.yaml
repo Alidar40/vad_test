@@ -9,12 +9,12 @@ noise_data_paths:
     - "/path/to/ESC-50-master/audio/"
 
 test_speech_data_paths:
-    - "/home/alidar/Dev/datasets/LibriSpeech/dev-clean/"
+    - "/path/to/LibriSpeech/dev-clean/"
 
 submission_data_paths:
-    - "/home/alidar/Dev/datasets/for_devs/"
+    - "/path/to/for_devs/"
 
-model: "lenet32" # lenet32, cnn_bilstm, ensemble_lenet32_cnn_bilsm, ensemble_lenet32_cnn_bilsm_double
+model: "lenet32" # lenet32, cnn_bilstm, ensemble_lenet32_cnn_bilsm
 # For ensemble model specify array of checkpoints!
 ckpt_path: "checkpoints/path/to/chekpoint.ckpt"
 continue_from_ckpt: false
@@ -45,12 +45,7 @@ test_models:
       ckpt_path: "checkpoints/path/to/cnn_bilstm.ckpt"
     - model: "ensemble_lenet32_cnn_bilstm"
       ckpt_path:
-          - "checkpoints/path/to/chekpoint.ckpt"
-          - "checkpoints/path/to/chekpoint.ckpt"
-    - model: "ensemble_lenet32_cnn_bilstm_double"
-      ckpt_path:
           - "checkpoints/path/to/lenet32.ckpt"
-          - "checkpoints/path/to/cnn_bilstm.ckpt"
           - "checkpoints/path/to/cnn_bilstm.ckpt"
 
 submission_thresholds:

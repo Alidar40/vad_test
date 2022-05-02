@@ -64,7 +64,7 @@ if __name__ == "__main__":
 
         FA = list()
         FR = list()
-        FA_equal_FR_threshold = 1.0
+        FA_equal_FR_threshold = None
         FA_min = 1.0
         FR_min = 1.0
         FA_min_value = 0
@@ -72,11 +72,20 @@ if __name__ == "__main__":
         for threshold in range(1, 100):
             threshold /= 100
             pred = (model.predictions > threshold).int()
-            FA.append(sum((model.target == 0) == (pred == 1)).item() / len(pred))
-            FR.append(sum((model.target == 1) == (pred == 0)).item() / len(pred))
-            if FA == FR:
-                FA_equal_FR_threshold = min(threshold, FA_equal_FR_threshold)
-                # FA_equal_FR_threshold = threshold
+
+            FP = sum((model.target == 0) == (pred == 1)).item()
+            N = sum(model.target == 0).item()
+            fa = round(FP / (FP + N), 2)
+            FA.append(fa)
+
+            FN = sum((model.target == 1) == (pred == 0)).item()
+            P = sum(model.target == 1).item()
+            fr = round(FN / (FN + P), 2)
+            FR.append(fr)
+
+            if fa == fr:
+                # FA_equal_FR_threshold = min(threshold, FA_equal_FR_threshold)
+                FA_equal_FR_threshold = threshold
 
         FA_min_idx = np.argmin(FA)
         FA_min = round(FA[FA_min_idx], 2)

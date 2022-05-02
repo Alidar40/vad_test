@@ -30,7 +30,7 @@ def plot_audio_with_vad(audio: np.array, predicted_labels: np.array, true_labels
     scaler = np.ones_like(predicted_labels)
     if normalize:
         audio = _norm_audio(audio.flatten())
-    if true_labels:
+    if true_labels is not None:
         true_labels = true_labels.flatten()
         time, time_labels = _time_axis(audio, true_labels)
     else:
@@ -41,7 +41,7 @@ def plot_audio_with_vad(audio: np.array, predicted_labels: np.array, true_labels
     plt.plot(time_labels, scaler, color='#E5ECF6')
     plt.plot(time_labels, scaler*-1, color='#E5ECF6')
     plt.plot(time_labels, predicted_labels, color='red', label="Predicted")
-    if true_labels:
+    if true_labels is not None:
         plt.plot(time_labels, true_labels, color='black', label="Truth")
     plt.title(title)
     plt.legend()

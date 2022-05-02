@@ -97,7 +97,7 @@ class SpeechFrameSet(Dataset):
         if random.random() < 0.5:
             # In half of the cases return non-speech audio
             is_speech = False
-            if random.random() < 0.8:
+            if random.random() < 0.95:
                 # Most of this non-speech audio should be noise
                 frame_start = random.randint(0, len(noise_audio)-FRAME_SIZE-1)
                 frame_end = frame_start + FRAME_SIZE
@@ -133,7 +133,7 @@ class SpeechFileSet(SpeechFrameSet):
 
         if random.random() < 0.5:
             # In half of the cases return non-speech audio
-            if random.random() < 0.8:
+            if random.random() < 0.95:
                 # Most of this non-speech audio should be noise
                 result_audio = noise_audio
             else:
@@ -171,24 +171,26 @@ def _get_files(data_paths: list):
 
 def get_train_val_dataloaders(feature_extractor, vad: ExternalVAD):
     speech_files = _get_files(SPEECH_DATA_PATHS)
-    noise_files = _get_files(SPEECH_DATA_PATHS)
+    noise_files = _get_files(NOISE_DATA_PATHS)
 
-    train_speech_files, val_speech_files = train_test_split(speech_files[:50], test_size=0.3, shuffle=True, random_state=SEED)
+    train_speech_files, val_speech_files = train_test_split(speech_files, test_size=0.8, shuffle=True, random_state=SEED)
 
     train_dataset = SpeechFrameSet(train_speech_files, noise_files, feature_extractor, vad)
     val_dataset = SpeechFileSet(val_speech_files, noise_files, feature_extractor, vad)
 
     # Keeping shuffle=False is important for caching and memoization
     train_dataloader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS)
-    val_dataloader = DataLoader(val_dataset, batch_size=1, shuffle=False, num_workers=2)
+    val_dataloader = DataLoader(val_dataset, batch_size=1, shuffle=False, num_workers=4, prefetch_factor=4)
 
     return train_dataloader, val_dataloader
 
 
 def get_test_dataloader(feature_extractor, vad: ExternalVAD):
     speech_files = _get_files(TEST_SPEECH_DATA_PATHS)
-    noise_files = _get_files(SPEECH_DATA_PATHS)
+    noise_files = _get_files(NOISE_DATA_PATHS)
 
-    dataset = SpeechFrameSet(speech_files[:1], noise_files, feature_extractor, vad)
+    # Test loop is quite computationally expensive
+    random.shuffle(speech_files)
+    dataset = SpeechFrameSet(speech_files[:100], noise_files, feature_extractor, vad)
 
-    return DataLoader(dataset, batch_size=1, shuffle=False, num_workers=2)
+    return DataLoader(dataset, batch_size=64, shuffle=False, num_workers=2)

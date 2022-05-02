@@ -55,7 +55,7 @@ if __name__ == "__main__":
 
         predictions[Path(file).name] = pred
 
-        if idx % 1 == 0:
+        if idx % 100 == 0:
             wandb.log({
                 f"Audio": wandb.Audio(audio, sample_rate=SAMPLE_RATE),
                 f"Audio with VAD": plot_audio_with_vad(audio, pred)
