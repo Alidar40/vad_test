@@ -22,32 +22,37 @@ def _time_axis(raw, labels):
     return time, time_labels
 
 
-def plot_audio_with_vad(audio: np.array, predicted_labels: np.array, true_labels: np.array, title="", normalize=False):
+def plot_audio_with_vad(audio: np.array, predicted_labels: np.array, true_labels: np.array = None, title="", normalize=False):
     '''
     Plot a raw signal as waveform and its corresponding labels.
     '''
     predicted_labels = predicted_labels.flatten()
-    true_labels = true_labels.flatten()
-    scaler = np.ones_like(true_labels)
+    scaler = np.ones_like(predicted_labels)
     if normalize:
         audio = _norm_audio(audio.flatten())
-    time, time_labels = _time_axis(audio, true_labels)
+    if true_labels:
+        true_labels = true_labels.flatten()
+        time, time_labels = _time_axis(audio, true_labels)
+    else:
+        time, time_labels = _time_axis(audio, np.zeros_like(predicted_labels))
 
     fig = plt.figure(1, figsize=(16, 3))
     plt.plot(time, audio)
     plt.plot(time_labels, scaler, color='#E5ECF6')
     plt.plot(time_labels, scaler*-1, color='#E5ECF6')
     plt.plot(time_labels, predicted_labels, color='red', label="Predicted")
-    plt.plot(time_labels, true_labels, color='black', label="Truth")
+    if true_labels:
+        plt.plot(time_labels, true_labels, color='black', label="Truth")
     plt.title(title)
     plt.legend()
     return fig
 
 
-def plot_roc(fpr, tpr, roc_auc=None, title="Receiver Operating Characteristic"):
+def plot_roc(fpr, tpr, roc_auc=None, title=""):
     '''
     Plot ROC-curve
     '''
+    fig = plt.figure(1, figsize=(5, 5))
     plt.title(title)
     if roc_auc:
         plt.plot(fpr, tpr, 'b', label='AUC = %0.2f' % roc_auc)
@@ -59,3 +64,29 @@ def plot_roc(fpr, tpr, roc_auc=None, title="Receiver Operating Characteristic"):
     plt.ylim([0, 1])
     plt.ylabel('True Positive Rate')
     plt.xlabel('False Positive Rate')
+
+    return fig
+
+
+def plot_roc_multiple(fp_rates: list, tp_rates: list, roc_aucs: list, names="", title=""):
+    '''
+    Plot ROC-curve for multiple classifiers
+    '''
+    fig = plt.figure(1, figsize=(5, 5))
+    plt.title(title)
+
+    plt.plot([0, 1], [0, 1], 'r--')
+    plt.xlim([0, 1])
+    plt.ylim([0, 1])
+    plt.ylabel('True Positive Rate')
+    plt.xlabel('False Positive Rate')
+
+    for fpr, tpr, roc_auc, name in zip(fp_rates, tp_rates, roc_aucs, names):
+        if roc_auc:
+            plt.plot(fpr, tpr, label=f"{name} AUC = {roc_auc:0.2f}")
+        else:
+            plt.plot(fpr, tpr)
+
+    plt.legend(loc='lower right')
+
+    return fig

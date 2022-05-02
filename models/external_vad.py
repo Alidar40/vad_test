@@ -37,7 +37,7 @@ class WebrtcVAD(ExternalVAD):
                 # why 'not is_speech'? Good question
                 predictions.append(not self.vad.is_speech(frame.tobytes(), SAMPLE_RATE))
 
-            return torch.unsqueeze(torch.as_tensor(predictions, dtype=torch.int), dim=1)
+            return torch.unsqueeze(torch.as_tensor(predictions, dtype=torch.float), dim=1)
 
         return not self.vad.is_speech(batch.tobytes(), SAMPLE_RATE)
 

@@ -10,19 +10,23 @@ noise_data_paths:
     - "/path/to/urban8k/"
     - "/path/to/ESC-50-master/audio/"
 
-model: "cnn_bilstm" # naive_linear, lenet8, lenet32, cnn_bilstm
-continue_from_ckpt: true
+test_speech_data_paths:
+    - "/home/alidar/Dev/datasets/LibriSpeech/dev-clean/"
+
+model: "lenet32" # lenet32, cnn_bilstm
+continue_from_ckpt: false
 ckpt_path: "checkpoints/path/to/chekpoint.ckpt"
 epochs: 50
 batch_size: 32
 num_workers: 2
 log_every_n_step: 150
-val_check_interval: 0.3
+val_check_interval: 0.1
 
 wandb:
     project: "vad_test"
     name: "as_model" # if 'as_model' then name will be taken from 'model' parameter
     mode: "online" # online or disabled
+    test_name: "Benchmark" # name for testing script
 
 seed: 42
 
