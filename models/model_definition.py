@@ -26,6 +26,10 @@ def get_classifier_by_name(model_name):
     elif model_name == "cnn_bilstm":
         classifier = CNN_BiLSTM()
         feature_extractor = logfbank_32_extractor
+    elif model_name.startswith("ensemble"):
+        # For test/benchmarking only!
+        classifier = None
+        feature_extractor = logfbank_32_extractor
     else:
         raise NotImplemented("Such a model is not implemented")
 
